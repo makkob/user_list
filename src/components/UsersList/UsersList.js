@@ -15,7 +15,7 @@ const collectionRef = collection(firestore, "user");
 
 const itemsPerPage = 5; // Кількість елементів на сторінці
 
-export default function Homepage() {
+export default function UserList() {
   const [data, setData] = useState(null);
   const [currentPage, setCurrentPage] = useState(1); // Поточна сторінка
   const [filter, setFilter] = useState(""); // Фільтр по користувачам

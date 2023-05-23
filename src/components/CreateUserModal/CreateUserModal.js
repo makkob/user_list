@@ -7,7 +7,7 @@ initializeApp(firebaseConfig);
 const firestore = getFirestore();
 const collectionRef = collection(firestore, "user");
 
-export default function CreateUser() {
+export default function CreateUserModal({ isOpen, onClose }) {
   const [name, setName] = useState("");
   const [surname, setSurname] = useState("");
   const [dateOfBirth, setDateOfBirth] = useState("");
@@ -54,44 +54,50 @@ export default function CreateUser() {
       setPhone("");
 
       console.log("User created successfully!");
+
+      onClose(); // Закрити модальне вікно після створення користувача
     } catch (error) {
       console.error("Error creating user:", error);
     }
   };
 
   return (
-    <div>
-      <input
-        type="text"
-        value={name}
-        onChange={handleNameChange}
-        placeholder="Name"
-      />
-      <input
-        type="text"
-        value={surname}
-        onChange={handleSurnameChange}
-        placeholder="Surname"
-      />
-      <input
-        type="text"
-        value={dateOfBirth}
-        onChange={handleDateOfBirthChange}
-        placeholder="Date of Birth"
-      />
-      <input
-        type="email"
-        value={email}
-        onChange={handleEmailChange}
-        placeholder="Email"
-      />
-      <input
-        type="text"
-        value={phone}
-        onChange={handlePhoneChange}
-        placeholder="Phone"
-      />
-      <button onClick={handleCreateUser}>Створити</button>
+    <div className={`modal ${isOpen ? "open" : ""}`}>
+      <div className="modal-content">
+        <h2>Create User</h2>
+        <input
+          type="text"
+          value={name}
+          onChange={handleNameChange}
+          placeholder="Name"
+        />
+        <input
+          type="text"
+          value={surname}
+          onChange={handleSurnameChange}
+          placeholder="Surname"
+        />
+        <input
+          type="text"
+          value={dateOfBirth}
+          onChange={handleDateOfBirthChange}
+          placeholder="Date of Birth"
+        />
+        <input
+          type="email"
+          value={email}
+          onChange={handleEmailChange}
+          placeholder="Email"
+        />
+        <input
+          type="text"
+          value={phone}
+          onChange={handlePhoneChange}
+          placeholder="Phone"
+        />
+        <button onClick={handleCreateUser}>Create User</button>
+        <button onClick={onClose}>Close</button>
+      </div>
     </div>
   );
 }
