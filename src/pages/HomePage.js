@@ -1,11 +1,13 @@
 import React from "react";
+import CreateUser from "../components/CreateUser";
 import UsersList from "../components/UsersList";
 
 export default function HomePage() {
   return (
     <>
-      <div>Homepage</div>
       <UsersList />
+      <br />
+      <CreateUser />
     </>
   );
 }
