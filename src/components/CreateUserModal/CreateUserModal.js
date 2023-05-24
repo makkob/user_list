@@ -65,7 +65,7 @@ export default function CreateUserModal() {
 
     setPhone(formattedValue);
 
-    // Handle backspace key press
+    // При натисканні на бекспейс
     if (e.nativeEvent.inputType === "deleteContentBackward") {
       const lastChar = formattedValue.charAt(formattedValue.length - 1);
       if (lastChar === ")" || lastChar === "-" || lastChar === " ") {
@@ -78,7 +78,7 @@ export default function CreateUserModal() {
 
   const handleCreateUser = async (e) => {
     e.preventDefault();
-    // Check if any field is empty
+    // Чек на пусте поле
     if (!name || !surname || !dateOfBirth || !email || !phone) {
       console.log("Please fill in all fields.");
       return;
@@ -95,7 +95,7 @@ export default function CreateUserModal() {
 
       await addDoc(collectionRef, newUser);
 
-      // Clear fields after user creation
+      // Очистити поля
       setName("");
       setSurname("");
       setDateOfBirth("");
@@ -104,7 +104,7 @@ export default function CreateUserModal() {
 
       console.log("User created successfully!");
 
-      handleClose(); // Close the modal after user creation
+      handleClose();
     } catch (error) {
       console.error("Error creating user:", error);
     }
