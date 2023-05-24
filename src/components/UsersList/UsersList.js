@@ -91,6 +91,7 @@ export default function UserList() {
     if (user) {
       setEditModalData(user);
     }
+    console.log("editModalData>>>>>>>>>>>>>>>>>>>>>", editModalData);
   };
 
   const handleCloseEditModal = () => {
@@ -124,6 +125,7 @@ export default function UserList() {
           email={editModalData?.email}
           phone={editModalData?.phone}
           dateOfBirth={editModalData?.dateOfBirth}
+          id={editModalData?.id}
         />
       </div>
       <div className={styles.container}>

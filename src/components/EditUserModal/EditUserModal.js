@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { initializeApp } from "firebase/app";
-import { getFirestore, collection, addDoc } from "firebase/firestore";
-import { firebaseConfig } from "../../config";
 import { Button, Modal, InputGroup, Form } from "react-bootstrap";
+import { initializeApp } from "firebase/app";
+import { getFirestore, collection, doc, updateDoc } from "firebase/firestore";
+import { firebaseConfig } from "../../config";
 import {
   PersonBadge,
   PersonPlus,
@@ -11,6 +11,7 @@ import {
   CheckLg,
 } from "react-bootstrap-icons";
 import styles from "./EditUserModal.module.css";
+import { updateUser } from "../../service/updateUser";
 
 initializeApp(firebaseConfig);
 const firestore = getFirestore();
@@ -50,14 +51,32 @@ export default function EditUserModal(props) {
   const handlePhoneChange = (e) => {
     setPhone(e.target.value);
   };
+
   const handleDateOfBirthChange = (e) => {
     setDateOfBirth(e.target.value);
+  };
+
+  const handleUpdateUser = async (e) => {
+    e.preventDefault();
+
+    try {
+      await updateUser(props.userId, {
+        name,
+        surname,
+        email,
+        phone,
+        dateOfBirth,
+      });
+      handleClose();
+    } catch (error) {
+      console.error("Error updating document: ", error);
+    }
   };
 
   return (
     <>
       <Modal show={props.show} onHide={handleClose}>
-        <Form>
+        <Form onSubmit={handleUpdateUser}>
           <Modal.Header closeButton>
             <Modal.Title>Змінити інформацію про користувача</Modal.Title>
           </Modal.Header>
@@ -123,12 +142,8 @@ export default function EditUserModal(props) {
             </InputGroup>
           </Modal.Body>
           <Modal.Footer>
-            <Button
-              variant="primary"
-              //  onClick={handleCreateUser}
-              type="submit"
-            >
-              <CheckLg /> Submit
+            <Button variant="primary" type="submit">
+              <CheckLg /> Зберегти
             </Button>
           </Modal.Footer>
         </Form>

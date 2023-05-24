@@ -22,6 +22,7 @@ export default function CreateUserModal() {
   const [dateOfBirth, setDateOfBirth] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("+380 (");
+
   const [show, setShow] = useState(false);
 
   const handleClose = () => setShow(false);
@@ -188,7 +189,7 @@ export default function CreateUserModal() {
           </Modal.Body>
           <Modal.Footer>
             <Button variant="primary" onClick={handleCreateUser} type="submit">
-              <CheckLg /> Submit
+              <CheckLg /> Відправити форму
             </Button>
           </Modal.Footer>{" "}
         </Form>
