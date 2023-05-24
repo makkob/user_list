@@ -60,7 +60,7 @@ export default function EditUserModal(props) {
     e.preventDefault();
 
     try {
-      await updateUser(props.userId, {
+      await updateUser(props.id, {
         name,
         surname,
         email,
