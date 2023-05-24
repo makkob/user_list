@@ -1,4 +1,23 @@
 import React, { useEffect, useState } from "react";
+import {
+  Pen,
+  Search,
+  PersonAdd,
+  Phone,
+  Calendar2Date,
+  Mailbox,
+  PersonBadge,
+  PersonFillX,
+  PersonFillGear,
+} from "react-bootstrap-icons";
+import {
+  Button,
+  InputGroup,
+  Form,
+  Pagination,
+  Card,
+  ButtonGroup,
+} from "react-bootstrap";
 import { initializeApp } from "firebase/app";
 import {
   getFirestore,
@@ -6,8 +25,14 @@ import {
   onSnapshot,
   query,
   where,
+  deleteDoc,
+  doc,
 } from "firebase/firestore";
+import styles from "./UsersList.module.css";
+import CreateUserModal from "../CreateUserModal";
 import { firebaseConfig } from "../../config";
+import { handleDeleteUser } from "../../service/deliteUser.js";
+import EditUserModal from "../EditUserModal";
 
 initializeApp(firebaseConfig);
 const firestore = getFirestore();
@@ -18,16 +43,17 @@ const itemsPerPage = 5; // Кількість елементів на сторі
 export default function UserList() {
   const [data, setData] = useState(null);
   const [currentPage, setCurrentPage] = useState(1); // Поточна сторінка
-  const [filter, setFilter] = useState(""); // Фільтр по користувачам
+  const [filter, setFilter] = useState(""); // Фільтр користувачів
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editModalData, setEditModalData] = useState(null); // Дані для редагування користувача
 
   useEffect(() => {
     let filteredCollectionRef = collectionRef;
     if (filter) {
-      const filterLower = filter.toLowerCase();
       filteredCollectionRef = query(
         collectionRef,
-        where("name", ">=", filterLower),
-        where("name", "<", filterLower + "\uf8ff")
+        where("name", ">=", filter),
+        where("name", "<", filter + "\uf8ff")
       );
     }
 
@@ -42,75 +68,121 @@ export default function UserList() {
     return () => unsubscribe();
   }, [filter]);
 
-  // Обчислення індексів елементів на поточній сторінці
+  // Обчислюємо індекси елементів на поточній сторінці
   const lastIndex = currentPage * itemsPerPage;
   const firstIndex = lastIndex - itemsPerPage;
   const currentData = data && data.slice(firstIndex, lastIndex);
 
-  // Обробник зміни сторінки
+  // Обробка зміни сторінки
   const handlePageChange = (page) => {
     setCurrentPage(page);
   };
 
-  // Обробник зміни фільтру
+  // Обробка зміни фільтра
   const handleFilterChange = (e) => {
     setFilter(e.target.value);
   };
 
-  // Обробник редагування користувача
+  // Обробка редагування користувача
   const handleEditUser = (id) => {
-    // Ваш код для редагування користувача з використанням id
-    console.log("Edit user with ID:", id);
+    console.log("Редагувати користувача з ID:", id);
+    setShowEditModal(true);
+    const user = data.find((item) => item.id === id);
+    if (user) {
+      setEditModalData(user);
+    }
   };
 
-  // Рендеринг пагінації
-  const renderPagination = () => {
-    const totalPages = Math.ceil((data && data.length) / itemsPerPage);
-
-    if (totalPages <= 1) return null;
-
-    const pages = [];
-    for (let i = 1; i <= totalPages; i++) {
-      pages.push(
-        <button key={i} onClick={() => handlePageChange(i)}>
-          {i}
-        </button>
-      );
-    }
-
-    return <div>{pages}</div>;
+  const handleCloseEditModal = () => {
+    setShowEditModal(false);
   };
 
   return (
-    <div>
+    <>
       <div>
-        <input
-          type="text"
-          value={filter}
+        <InputGroup
+          className="mb-3"
           onChange={handleFilterChange}
-          placeholder="Filter by name"
+          value={filter}
+          size="lg"
+        >
+          <InputGroup.Text id="basic-addon1">
+            <Search /> Фільтрувати за ім'ям користувача{" "}
+          </InputGroup.Text>
+          <Form.Control
+            placeholder="Ім'я користувача"
+            aria-label="Ім'я користувача"
+            aria-describedby="basic-addon1"
+          />
+        </InputGroup>
+        <CreateUserModal />
+        <EditUserModal
+          show={showEditModal}
+          onClose={handleCloseEditModal}
+          name={editModalData?.name}
+          surname={editModalData?.surname}
+          email={editModalData?.email}
+          phone={editModalData?.phone}
+          dateOfBirth={editModalData?.dateOfBirth}
         />
       </div>
-      <div>
+      <div className={styles.container}>
         {currentData && (
-          <div>
+          <>
             {currentData.map((item) => (
-              <div key={item.id}>
-                <p>Name: {item.name}</p>
-                <p>Surname: {item.surname}</p>
-                <p>Date of birth: {item.dateOfBirth}</p>
-                <p>Email: {item.email}</p>
-                <p>Phone: {item.phone}</p>
-                <button onClick={() => handleEditUser(item.id)}>
-                  Редагувати
-                </button>
-              </div>
+              <Card key={item.id} className={styles.item}>
+                <Card.Body>
+                  <Card.Title>
+                    <PersonBadge /> {item.name} {item.surname}
+                  </Card.Title>
+                  <Card.Text>
+                    <Calendar2Date /> {item.dateOfBirth}
+                  </Card.Text>
+                  <Card.Text>
+                    <Mailbox /> {item.email}
+                  </Card.Text>
+                  <Card.Text>
+                    <Phone /> {item.phone}
+                  </Card.Text>
+                  <ButtonGroup
+                    aria-label="First group"
+                    className={styles.buttonGroup}
+                  >
+                    <Button
+                      variant="secondary"
+                      onClick={() => handleEditUser(item.id)}
+                    >
+                      Редагувати <PersonFillGear />
+                    </Button>{" "}
+                    <Button
+                      variant="danger"
+                      onClick={() => handleDeleteUser(item.id)}
+                    >
+                      Видалити
+                      <PersonFillX />
+                    </Button>{" "}
+                  </ButtonGroup>
+                </Card.Body>
+              </Card>
             ))}
-          </div>
+          </>
         )}
       </div>
       {/* Відображення пагінації */}
-      {renderPagination()}
-    </div>
+      <Pagination className={styles.pagination}>
+        {data &&
+          Array.from({ length: Math.ceil(data.length / itemsPerPage) }).map(
+            (_, index) => (
+              <Pagination.Item
+                key={index + 1}
+                active={index + 1 === currentPage}
+                onClick={() => handlePageChange(index + 1)}
+              >
+                {index + 1}
+              </Pagination.Item>
+            )
+          )}
+      </Pagination>
+    </>
   );
 }

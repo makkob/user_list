@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { initializeApp } from "firebase/app";
 import { getFirestore, collection, addDoc } from "firebase/firestore";
 import { firebaseConfig } from "../../config";
@@ -10,22 +10,30 @@ import {
   Calendar2Date,
   CheckLg,
 } from "react-bootstrap-icons";
-import styles from "./CreateUserModal.module.css";
+import styles from "./EditUserModal.module.css";
 
 initializeApp(firebaseConfig);
 const firestore = getFirestore();
 const collectionRef = collection(firestore, "user");
 
-export default function CreateUserModal() {
+export default function EditUserModal(props) {
   const [name, setName] = useState("");
   const [surname, setSurname] = useState("");
-  const [dateOfBirth, setDateOfBirth] = useState("");
   const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("+380 (");
-  const [show, setShow] = useState(false);
+  const [phone, setPhone] = useState("");
+  const [dateOfBirth, setDateOfBirth] = useState("");
 
-  const handleClose = () => setShow(false);
-  const handleShow = () => setShow(true);
+  useEffect(() => {
+    setName(props.name || "");
+    setSurname(props.surname || "");
+    setEmail(props.email || "");
+    setPhone(props.phone || "");
+    setDateOfBirth(props.dateOfBirth || "");
+  }, [props.name, props.surname, props.email, props.phone, props.dateOfBirth]);
+
+  const handleClose = () => {
+    props.onClose();
+  };
 
   const handleNameChange = (e) => {
     setName(e.target.value);
@@ -35,95 +43,23 @@ export default function CreateUserModal() {
     setSurname(e.target.value);
   };
 
-  const handleDateOfBirthChange = (e) => {
-    setDateOfBirth(e.target.value);
-  };
-
   const handleEmailChange = (e) => {
     setEmail(e.target.value);
   };
 
   const handlePhoneChange = (e) => {
-    let value = e.target.value;
-    value = value.replace(/\D/g, "");
-
-    let formattedValue = "";
-    if (value.length >= 2) {
-      formattedValue +=
-        "+" + value.slice(0, 3) + " (" + value.slice(3, 5) + ")";
-    }
-    if (value.length >= 5) {
-      formattedValue += " " + value.slice(5, 8);
-    }
-    if (value.length >= 8) {
-      formattedValue += "-" + value.slice(8, 10);
-    }
-    if (value.length >= 10) {
-      formattedValue += "-" + value.slice(10, 12);
-    }
-
-    setPhone(formattedValue);
-
-    // Handle backspace key press
-    if (e.nativeEvent.inputType === "deleteContentBackward") {
-      const lastChar = formattedValue.charAt(formattedValue.length - 1);
-      if (lastChar === ")" || lastChar === "-" || lastChar === " ") {
-        setPhone(formattedValue.slice(0, formattedValue.length - 2));
-      } else {
-        setPhone(formattedValue.slice(0, formattedValue.length - 1));
-      }
-    }
+    setPhone(e.target.value);
   };
-
-  const handleCreateUser = async (e) => {
-    e.preventDefault();
-    // Check if any field is empty
-    if (!name || !surname || !dateOfBirth || !email || !phone) {
-      console.log("Please fill in all fields.");
-      return;
-    }
-
-    try {
-      const newUser = {
-        name,
-        surname,
-        dateOfBirth,
-        email,
-        phone,
-      };
-
-      await addDoc(collectionRef, newUser);
-
-      // Clear fields after user creation
-      setName("");
-      setSurname("");
-      setDateOfBirth("");
-      setEmail("");
-      setPhone("+380 (");
-
-      console.log("User created successfully!");
-
-      handleClose(); // Close the modal after user creation
-    } catch (error) {
-      console.error("Error creating user:", error);
-    }
+  const handleDateOfBirthChange = (e) => {
+    setDateOfBirth(e.target.value);
   };
 
   return (
     <>
-      <Button
-        variant="primary"
-        onClick={handleShow}
-        className={styles.createUserButton}
-      >
-        <PersonPlus /> Створити користувача
-      </Button>
-
-      <Modal show={show} onHide={handleClose}>
-        {" "}
+      <Modal show={props.show} onHide={handleClose}>
         <Form>
           <Modal.Header closeButton>
-            <Modal.Title>Заповнити інформацію про користувача</Modal.Title>
+            <Modal.Title>Змінити інформацію про користувача</Modal.Title>
           </Modal.Header>
           <Modal.Body>
             <InputGroup className="mb-3">
@@ -133,15 +69,15 @@ export default function CreateUserModal() {
               <Form.Control
                 aria-label="Name"
                 placeholder="Name"
-                onChange={handleNameChange}
                 value={name}
+                onChange={handleNameChange}
                 required
               />
               <Form.Control
                 aria-label="Surname"
                 placeholder="Surname"
-                onChange={handleSurnameChange}
                 value={surname}
+                onChange={handleSurnameChange}
                 required
               />
             </InputGroup>
@@ -153,8 +89,8 @@ export default function CreateUserModal() {
                 placeholder="Your email"
                 aria-label="Your email"
                 aria-describedby="basic-addon1"
-                onChange={handleEmailChange}
                 value={email}
+                onChange={handleEmailChange}
                 required
               />
             </InputGroup>
@@ -166,8 +102,8 @@ export default function CreateUserModal() {
               <Form.Control
                 id="basic-url"
                 aria-describedby="basic-addon3"
-                onChange={handlePhoneChange}
                 value={phone}
+                onChange={handlePhoneChange}
                 placeholder="+380 (xx) xxx-xx-xx"
                 required
               />
@@ -187,10 +123,14 @@ export default function CreateUserModal() {
             </InputGroup>
           </Modal.Body>
           <Modal.Footer>
-            <Button variant="primary" onClick={handleCreateUser} type="submit">
+            <Button
+              variant="primary"
+              //  onClick={handleCreateUser}
+              type="submit"
+            >
               <CheckLg /> Submit
             </Button>
-          </Modal.Footer>{" "}
+          </Modal.Footer>
         </Form>
       </Modal>
     </>
